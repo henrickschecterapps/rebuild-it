@@ -60,9 +60,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Tripla Eventos v2.0" },
+      { title: "55319833217680001" },
       { name: "description", content: "Plataforma de calendário e gestão operacional estratégica." },
       { name: "author", content: "Tripla Eventos" },
+      { property: "og:title", content: "55319833217680001" },
+      { name: "twitter:title", content: "55319833217680001" },
+      { property: "og:description", content: "Plataforma de calendário e gestão operacional estratégica." },
+      { name: "twitter:description", content: "Plataforma de calendário e gestão operacional estratégica." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1f367966-005d-498f-afb8-1615bd2ec705/id-preview-ae7f2d1b--28758451-1ad3-4cdd-bc12-fdb220150a51.lovable.app-1779037860444.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1f367966-005d-498f-afb8-1615bd2ec705/id-preview-ae7f2d1b--28758451-1ad3-4cdd-bc12-fdb220150a51.lovable.app-1779037860444.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
