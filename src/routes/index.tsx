@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LogIn, Loader2 } from "lucide-react";
+import { LogIn, Loader2, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useAuth } from "@/store/useAuth";
-import { loginWithEmail } from "@/lib/supabase-auth";
+import { loginWithEmail, signUpUser } from "@/lib/supabase-auth";
 
 export const Route = createFileRoute("/")({
   component: LoginPage,
@@ -18,6 +18,8 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
     if (user && !loading) {
@@ -34,11 +36,18 @@ function LoginPage() {
     }
     try {
       setIsLoggingIn(true);
-      await loginWithEmail(email, password);
-      toast.success("Bem-vindo!");
+      if (mode === "signup") {
+        await signUpUser(email, password, displayName || undefined);
+        toast.success("Conta criada! Entrando...");
+        await loginWithEmail(email, password);
+      } else {
+        await loginWithEmail(email, password);
+        toast.success("Bem-vindo!");
+      }
     } catch (err) {
       console.error(err);
-      setErrorMsg("Credenciais inválidas ou erro ao conectar.");
+      const msg = err instanceof Error ? err.message : "Erro ao conectar.";
+      setErrorMsg(msg);
       setIsLoggingIn(false);
     }
   };
@@ -60,6 +69,17 @@ function LoginPage() {
         </div>
 
         <form onSubmit={handleLogin} className="w-full flex flex-col gap-4">
+          {mode === "signup" && (
+            <input
+              type="text"
+              placeholder="Seu nome"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="input-base"
+              disabled={isLoggingIn || loading}
+              autoComplete="name"
+            />
+          )}
           <input
             type="email"
             placeholder="E-mail corporativo"
@@ -76,7 +96,7 @@ function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="input-base"
             disabled={isLoggingIn || loading}
-            autoComplete="current-password"
+            autoComplete={mode === "signup" ? "new-password" : "current-password"}
           />
 
           {errorMsg && <p className="text-red text-sm font-semibold">{errorMsg}</p>}
@@ -87,7 +107,22 @@ function LoginPage() {
             className="btn-primary w-full flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed mt-2"
           >
             {(isLoggingIn || loading) && <Loader2 className="w-5 h-5 animate-spin" />}
-            {loading ? "Conectando..." : isLoggingIn ? "Autenticando..." : "Entrar no Painel"}
+            {!isLoggingIn && !loading && (mode === "signup" ? <UserPlus className="w-5 h-5" /> : <LogIn className="w-5 h-5" />)}
+            {loading
+              ? "Conectando..."
+              : isLoggingIn
+              ? (mode === "signup" ? "Criando conta..." : "Autenticando...")
+              : (mode === "signup" ? "Criar conta" : "Entrar no Painel")}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setMode(mode === "login" ? "signup" : "login"); setErrorMsg(""); }}
+            className="text-xs text-muted hover:text-text transition-colors"
+          >
+            {mode === "login"
+              ? "Primeiro acesso? Criar conta de admin"
+              : "Já tenho conta — voltar ao login"}
           </button>
         </form>
 
