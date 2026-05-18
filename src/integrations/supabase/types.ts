@@ -14,6 +14,168 @@ export type Database = {
   }
   public: {
     Tables: {
+      events: {
+        Row: {
+          apuracao_finalizada: boolean | null
+          arquivos: Json | null
+          beneficios: string | null
+          brindes_alocados: Json | null
+          cidade: string | null
+          clientes: Json | null
+          comentarios: Json | null
+          conteudo: string | null
+          cota: string | null
+          created_at: string
+          created_by: string | null
+          custo_brindes: number | null
+          custo_hospedagem: number | null
+          custo_ingressos: number | null
+          custo_outros: number | null
+          custo_passagens: number | null
+          custo_real: number | null
+          custo_uniformes: number | null
+          data_fim: string | null
+          data_ini: string
+          descricao: string | null
+          equipe: Json | null
+          estoque_baixa_processada: boolean | null
+          evento: string
+          formato: string | null
+          historico: Json | null
+          hora_fim: string | null
+          hora_ini: string | null
+          id: string
+          links: string | null
+          localidade: string | null
+          materiais: string | null
+          obs: string | null
+          orcamento_total: number | null
+          organizadores: Json | null
+          outros_custos_lista: Json | null
+          participantes: string | null
+          previsao_fechamento: number | null
+          previsao_pipe: number | null
+          publico: string | null
+          receita_estimada: number | null
+          responsavel: string | null
+          status: string
+          tipo: string
+          tipo_financeiro: string | null
+          uf: string | null
+          updated_at: string
+          vagas_cliente: number | null
+          vagas_staff: number | null
+          vagas_vip: number | null
+          vips: Json | null
+        }
+        Insert: {
+          apuracao_finalizada?: boolean | null
+          arquivos?: Json | null
+          beneficios?: string | null
+          brindes_alocados?: Json | null
+          cidade?: string | null
+          clientes?: Json | null
+          comentarios?: Json | null
+          conteudo?: string | null
+          cota?: string | null
+          created_at?: string
+          created_by?: string | null
+          custo_brindes?: number | null
+          custo_hospedagem?: number | null
+          custo_ingressos?: number | null
+          custo_outros?: number | null
+          custo_passagens?: number | null
+          custo_real?: number | null
+          custo_uniformes?: number | null
+          data_fim?: string | null
+          data_ini: string
+          descricao?: string | null
+          equipe?: Json | null
+          estoque_baixa_processada?: boolean | null
+          evento: string
+          formato?: string | null
+          historico?: Json | null
+          hora_fim?: string | null
+          hora_ini?: string | null
+          id?: string
+          links?: string | null
+          localidade?: string | null
+          materiais?: string | null
+          obs?: string | null
+          orcamento_total?: number | null
+          organizadores?: Json | null
+          outros_custos_lista?: Json | null
+          participantes?: string | null
+          previsao_fechamento?: number | null
+          previsao_pipe?: number | null
+          publico?: string | null
+          receita_estimada?: number | null
+          responsavel?: string | null
+          status?: string
+          tipo?: string
+          tipo_financeiro?: string | null
+          uf?: string | null
+          updated_at?: string
+          vagas_cliente?: number | null
+          vagas_staff?: number | null
+          vagas_vip?: number | null
+          vips?: Json | null
+        }
+        Update: {
+          apuracao_finalizada?: boolean | null
+          arquivos?: Json | null
+          beneficios?: string | null
+          brindes_alocados?: Json | null
+          cidade?: string | null
+          clientes?: Json | null
+          comentarios?: Json | null
+          conteudo?: string | null
+          cota?: string | null
+          created_at?: string
+          created_by?: string | null
+          custo_brindes?: number | null
+          custo_hospedagem?: number | null
+          custo_ingressos?: number | null
+          custo_outros?: number | null
+          custo_passagens?: number | null
+          custo_real?: number | null
+          custo_uniformes?: number | null
+          data_fim?: string | null
+          data_ini?: string
+          descricao?: string | null
+          equipe?: Json | null
+          estoque_baixa_processada?: boolean | null
+          evento?: string
+          formato?: string | null
+          historico?: Json | null
+          hora_fim?: string | null
+          hora_ini?: string | null
+          id?: string
+          links?: string | null
+          localidade?: string | null
+          materiais?: string | null
+          obs?: string | null
+          orcamento_total?: number | null
+          organizadores?: Json | null
+          outros_custos_lista?: Json | null
+          participantes?: string | null
+          previsao_fechamento?: number | null
+          previsao_pipe?: number | null
+          publico?: string | null
+          receita_estimada?: number | null
+          responsavel?: string | null
+          status?: string
+          tipo?: string
+          tipo_financeiro?: string | null
+          uf?: string | null
+          updated_at?: string
+          vagas_cliente?: number | null
+          vagas_staff?: number | null
+          vagas_vip?: number | null
+          vips?: Json | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
