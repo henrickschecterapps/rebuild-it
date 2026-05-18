@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { LogOut, Moon, Sun, Calendar as CalendarIcon } from "lucide-react";
 
 import { useAuth } from "@/store/useAuth";
@@ -65,6 +65,15 @@ function DashboardPlaceholder() {
                 Eventos + Calendário
               </p>
             </div>
+          </div>
+
+          <div className="mt-8">
+            <Link
+              to="/calendar"
+              className="btn-primary inline-flex items-center gap-2"
+            >
+              <CalendarIcon className="w-4 h-4" /> Abrir calendário
+            </Link>
           </div>
         </div>
       </main>
