@@ -176,6 +176,60 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_items: {
+        Row: {
+          ativo: boolean
+          categoria: string
+          created_at: string
+          created_by: string | null
+          custo_unitario: number | null
+          fornecedor: string | null
+          foto_url: string | null
+          id: string
+          localizacao: string | null
+          nome: string
+          obs: string | null
+          qtd_reservada: number
+          qtd_total: number
+          unidade: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          created_by?: string | null
+          custo_unitario?: number | null
+          fornecedor?: string | null
+          foto_url?: string | null
+          id?: string
+          localizacao?: string | null
+          nome: string
+          obs?: string | null
+          qtd_reservada?: number
+          qtd_total?: number
+          unidade?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          created_by?: string | null
+          custo_unitario?: number | null
+          fornecedor?: string | null
+          foto_url?: string | null
+          id?: string
+          localizacao?: string | null
+          nome?: string
+          obs?: string | null
+          qtd_reservada?: number
+          qtd_total?: number
+          unidade?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
