@@ -7,6 +7,8 @@ import { useAuth } from "@/store/useAuth";
 import { useEvents } from "@/store/useEvents";
 import { deleteEvent, logEventHistory } from "@/lib/eventActions";
 import type { TriplaEvent } from "@/types/evento";
+import { useInventory } from "@/store/useInventory";
+import type { BrindeAlocado } from "@/types/evento";
 
 const DEFAULT_ORGS = ["Gente & Gestão", "Jessica Alves (SP)", "Jessica Andrade (BH)", "Marketing"];
 
@@ -52,6 +54,7 @@ const empty: FormState = {
 export default function EventFormModal() {
   const { isEditingEvent, selectedEvent, close, fetchEvents } = useEvents();
   const { user, isAdmin } = useAuth();
+  const { items: inventoryItems, fetchItems: fetchInventory } = useInventory();
 
   const [formData, setFormData] = useState<FormState>(empty);
   const [loading, setLoading] = useState(false);
@@ -59,6 +62,7 @@ export default function EventFormModal() {
 
   useEffect(() => {
     if (!isEditingEvent) return;
+    fetchInventory();
     if (selectedEvent) {
       setFormData({
         ...empty,
@@ -69,7 +73,7 @@ export default function EventFormModal() {
       setFormData(empty);
     }
     setError("");
-  }, [isEditingEvent, selectedEvent]);
+  }, [isEditingEvent, selectedEvent, fetchInventory]);
 
   if (!isEditingEvent) return null;
 
@@ -97,6 +101,17 @@ export default function EventFormModal() {
   const updateOutro = (id: string, patch: Partial<OutroCusto>) =>
     setOutros(outros.map((o) => (o.id === id ? { ...o, ...patch } : o)));
   const removeOutro = (id: string) => setOutros(outros.filter((o) => o.id !== id));
+
+  // ---- Brindes alocados ----
+  const brindes: BrindeAlocado[] = (formData.brindes_alocados as BrindeAlocado[]) || [];
+  const setBrindes = (list: BrindeAlocado[]) =>
+    setFormData((prev) => ({ ...prev, brindes_alocados: list }));
+
+  const addBrinde = () =>
+    setBrindes([...brindes, { id: crypto.randomUUID(), item: "", qtd: 1, docId: "" }]);
+  const updateBrinde = (id: string, patch: Partial<BrindeAlocado>) =>
+    setBrindes(brindes.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+  const removeBrinde = (id: string) => setBrindes(brindes.filter((b) => b.id !== id));
 
   // ---- Totais calculados ----
   const totalCustosFixos = useMemo(
@@ -514,6 +529,78 @@ export default function EventFormModal() {
                 />
                 <span className="text-sm font-bold text-text">Apuração finalizada</span>
               </label>
+            </section>
+
+            {/* Seção 7 — Brindes alocados */}
+            <section className="bg-surface p-8 rounded-2xl border border-border space-y-6">
+              <div className="flex items-center justify-between">
+                <SectionHeader index={7} title="Brindes alocados" />
+                <button
+                  type="button"
+                  onClick={addBrinde}
+                  className="flex items-center gap-1.5 text-xs font-bold text-accent hover:bg-accent/10 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Adicionar
+                </button>
+              </div>
+
+              {brindes.length === 0 ? (
+                <p className="text-xs text-muted italic">Nenhum brinde alocado para este evento.</p>
+              ) : (
+                <div className="space-y-2">
+                  {brindes.map((b) => {
+                    const matched = inventoryItems.find((i) => i.id === b.docId);
+                    const disponivel = matched ? (matched.qtd_total || 0) - (matched.qtd_reservada || 0) : null;
+                    return (
+                      <div key={b.id} className="grid grid-cols-12 gap-2 items-center">
+                        <select
+                          className="input-base col-span-6"
+                          value={b.docId || ""}
+                          onChange={(e) => {
+                            const item = inventoryItems.find((i) => i.id === e.target.value);
+                            updateBrinde(b.id!, {
+                              docId: e.target.value,
+                              item: item?.nome || b.item,
+                              _collection: "inventory_items",
+                            });
+                          }}
+                        >
+                          <option value="">— item livre —</option>
+                          {inventoryItems.map((i) => (
+                            <option key={i.id} value={i.id}>{i.nome} ({i.categoria})</option>
+                          ))}
+                        </select>
+                        <input
+                          className="input-base col-span-3"
+                          placeholder="Item (livre)"
+                          value={b.item}
+                          onChange={(e) => updateBrinde(b.id!, { item: e.target.value })}
+                        />
+                        <input
+                          type="number"
+                          className="input-base col-span-2"
+                          min={1}
+                          value={b.qtd}
+                          onChange={(e) => updateBrinde(b.id!, { qtd: Number(e.target.value) })}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeBrinde(b.id!)}
+                          className="col-span-1 p-2 text-muted hover:text-red hover:bg-red/10 rounded-lg transition-colors flex items-center justify-center"
+                          aria-label="Remover"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        {disponivel !== null && (
+                          <div className="col-span-12 -mt-1 ml-1 text-[10px] font-bold text-muted">
+                            Disponível no estoque: <span className={disponivel < b.qtd ? "text-red" : "text-emerald-500"}>{disponivel}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </section>
           </div>
         </div>
