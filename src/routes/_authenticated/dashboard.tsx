@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { LogOut, Moon, Sun, Calendar as CalendarIcon } from "lucide-react";
+import { LogOut, Moon, Sun, Calendar as CalendarIcon, Boxes } from "lucide-react";
 
 import { useAuth } from "@/store/useAuth";
 import { useTheme } from "@/store/useTheme";
@@ -67,12 +67,18 @@ function DashboardPlaceholder() {
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
               to="/calendar"
               className="btn-primary inline-flex items-center gap-2"
             >
               <CalendarIcon className="w-4 h-4" /> Abrir calendário
+            </Link>
+            <Link
+              to="/inventory"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-surface2 hover:bg-surface2/70 text-text font-bold border border-border transition-colors"
+            >
+              <Boxes className="w-4 h-4" /> Almoxarifado
             </Link>
           </div>
         </div>
