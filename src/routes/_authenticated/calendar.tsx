@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calendar as CalendarIcon, Plus, Download, LogOut, Moon, Sun, ArrowLeft } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Download, LogOut, Moon, Sun, ArrowLeft, GanttChartSquare } from "lucide-react";
 import type { View } from "react-big-calendar";
 
 import { useEvents } from "@/store/useEvents";
@@ -9,17 +9,20 @@ import { useTheme } from "@/store/useTheme";
 import { logout } from "@/lib/supabase-auth";
 import { exportICS } from "@/lib/eventActions";
 import CalendarGrid from "@/components/CalendarGrid";
+import TimelineView from "@/components/TimelineView";
 import EventFormModal from "@/components/EventFormModal";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: CalendarPage,
 });
 
+type ViewMode = View | "timeline";
+
 function CalendarPage() {
   const { events, fetchEvents, openNew, loading } = useEvents();
   const { isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const [view, setView] = useState<View>("month");
+  const [view, setView] = useState<ViewMode>("month");
 
   useEffect(() => {
     fetchEvents();
@@ -41,6 +44,17 @@ function CalendarPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setView(view === "timeline" ? "month" : "timeline")}
+            className={`hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors text-sm font-semibold ${
+              view === "timeline"
+                ? "bg-accent/10 text-accent"
+                : "text-muted hover:text-text hover:bg-surface2"
+            }`}
+            aria-pressed={view === "timeline"}
+          >
+            <GanttChartSquare className="w-4 h-4" /> Timeline
+          </button>
           <button
             onClick={() => exportICS(events)}
             className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-muted hover:text-text hover:bg-surface2 transition-colors text-sm font-semibold"
@@ -72,11 +86,16 @@ function CalendarPage() {
       <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-8 py-8 animate-fade-up">
         {loading && events.length === 0 ? (
           <div className="text-muted text-sm">Carregando eventos...</div>
+        ) : view === "timeline" ? (
+          <TimelineView
+            eventsToRender={events}
+            onSelectEvent={(ev) => useEvents.getState().openEdit(ev)}
+          />
         ) : (
           <CalendarGrid
             eventsToRender={events}
-            view={view}
-            onView={setView}
+            view={view as View}
+            onView={(v) => setView(v)}
             onSelectEvent={(ev) => useEvents.getState().openEdit(ev)}
           />
         )}
