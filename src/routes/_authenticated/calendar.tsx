@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calendar as CalendarIcon, Plus, Download, LogOut, Moon, Sun, ArrowLeft, GanttChartSquare } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Download, LogOut, Moon, Sun, ArrowLeft, GanttChartSquare, LayoutGrid } from "lucide-react";
 import type { View } from "react-big-calendar";
 
 import { useEvents } from "@/store/useEvents";
@@ -10,13 +10,14 @@ import { logout } from "@/lib/supabase-auth";
 import { exportICS } from "@/lib/eventActions";
 import CalendarGrid from "@/components/CalendarGrid";
 import TimelineView from "@/components/TimelineView";
+import CardsView from "@/components/CardsView";
 import EventFormModal from "@/components/EventFormModal";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: CalendarPage,
 });
 
-type ViewMode = View | "timeline";
+type ViewMode = View | "timeline" | "cards";
 
 function CalendarPage() {
   const { events, fetchEvents, openNew, loading } = useEvents();
@@ -56,6 +57,17 @@ function CalendarPage() {
             <GanttChartSquare className="w-4 h-4" /> Timeline
           </button>
           <button
+            onClick={() => setView(view === "cards" ? "month" : "cards")}
+            className={`hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors text-sm font-semibold ${
+              view === "cards"
+                ? "bg-accent/10 text-accent"
+                : "text-muted hover:text-text hover:bg-surface2"
+            }`}
+            aria-pressed={view === "cards"}
+          >
+            <LayoutGrid className="w-4 h-4" /> Cards
+          </button>
+          <button
             onClick={() => exportICS(events)}
             className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-muted hover:text-text hover:bg-surface2 transition-colors text-sm font-semibold"
           >
@@ -88,6 +100,11 @@ function CalendarPage() {
           <div className="text-muted text-sm">Carregando eventos...</div>
         ) : view === "timeline" ? (
           <TimelineView
+            eventsToRender={events}
+            onSelectEvent={(ev) => useEvents.getState().openEdit(ev)}
+          />
+        ) : view === "cards" ? (
+          <CardsView
             eventsToRender={events}
             onSelectEvent={(ev) => useEvents.getState().openEdit(ev)}
           />
