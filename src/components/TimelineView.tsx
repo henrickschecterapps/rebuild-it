@@ -1,53 +1,22 @@
 import { useMemo } from "react";
 import type { TriplaEvent } from "@/types/evento";
 import { parseEventStringDate } from "@/lib/dateUtils";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { MapPin, Users, Clock } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 interface TimelineViewProps {
   eventsToRender: TriplaEvent[];
   onSelectEvent?: (ev: TriplaEvent) => void;
 }
 
-interface MonthGroup {
-  key: string;
-  label: string;
-  events: { ev: TriplaEvent; date: Date }[];
-}
-
 export default function TimelineView({ eventsToRender, onSelectEvent }: TimelineViewProps) {
-  const groups = useMemo<MonthGroup[]>(() => {
-    const withDates = eventsToRender
+  const items = useMemo(() => {
+    return eventsToRender
       .map((ev) => ({ ev, date: parseEventStringDate(ev.data_ini) }))
       .filter((x): x is { ev: TriplaEvent; date: Date } => !!x.date)
       .sort((a, b) => a.date.getTime() - b.date.getTime());
-
-    const map = new Map<string, MonthGroup>();
-    for (const item of withDates) {
-      const key = `${item.date.getFullYear()}-${item.date.getMonth()}`;
-      if (!map.has(key)) {
-        map.set(key, {
-          key,
-          label: format(item.date, "MMMM 'de' yyyy", { locale: ptBR }),
-          events: [],
-        });
-      }
-      map.get(key)!.events.push(item);
-    }
-    return Array.from(map.values());
   }, [eventsToRender]);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const colorFor = (ev: TriplaEvent) => {
-    if (ev.tipo === "Feriado") return "var(--amber)";
-    if (ev.tipo?.includes("Comercial")) return "var(--accent)";
-    return "var(--green)";
-  };
-
-  if (groups.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="h-full w-full bg-surface/40 backdrop-blur-3xl rounded-[32px] shadow-sm border border-border p-12 flex items-center justify-center text-muted text-sm">
         Nenhum evento para exibir na timeline.
@@ -56,115 +25,69 @@ export default function TimelineView({ eventsToRender, onSelectEvent }: Timeline
   }
 
   return (
-    <div className="h-full w-full bg-surface/40 backdrop-blur-3xl rounded-[32px] shadow-sm border border-border p-6 sm:p-10 transition-all duration-500">
-      <div className="relative">
-        {/* Vertical line */}
-        <div
-          aria-hidden
-          className="absolute left-[7.5rem] top-2 bottom-2 w-px hidden md:block"
-          style={{ background: "linear-gradient(to bottom, color-mix(in srgb, var(--border) 80%, transparent), transparent)" }}
-        />
+    <div
+      className="relative pl-8 sm:pl-10 space-y-6 before:absolute before:left-[19px] sm:before:left-[23px] before:top-2 before:bottom-2 before:w-[1.5px] before:bg-border"
+    >
+      {items.map(({ ev, date }) => {
+        const monthShort = date.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "").slice(0, 3);
+        const dayNum = date.getDate();
+        const timeStr = ev.hora_ini || date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+        const location = [ev.cidade, ev.uf].filter(Boolean).join("/") || ev.localidade || "—";
+        return (
+          <div
+            key={ev.id}
+            onClick={() => onSelectEvent?.(ev)}
+            className="relative group cursor-pointer animate-fade-up"
+          >
+            {/* Dot on the timeline */}
+            <div className="absolute -left-[23px] sm:-left-[27px] top-4 h-4 w-4 rounded-full border-[3px] bg-bg border-accent shadow-md group-hover:scale-125 transition-transform duration-200 z-10" />
 
-        <div className="space-y-12">
-          {groups.map((group) => (
-            <section key={group.key}>
-              <h3 className="font-heading font-bold text-xl text-text capitalize mb-6 md:pl-[10rem]">
-                {group.label}
-                <span className="ml-3 text-xs font-medium text-muted">
-                  {group.events.length} evento{group.events.length === 1 ? "" : "s"}
-                </span>
-              </h3>
+            <div className="p-5 rounded-2xl border border-border bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300 hover:bg-surface2 hover:border-accent/30 hover:shadow-lg">
+              <div className="flex items-start gap-4">
+                {/* Date box */}
+                <div className="p-3.5 w-16 rounded-xl flex flex-col items-center justify-center border border-border bg-surface2 text-center shrink-0">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
+                    {monthShort}
+                  </span>
+                  <span className="text-2xl font-bold font-heading text-accent leading-none mt-1">
+                    {dayNum}
+                  </span>
+                </div>
 
-              <ul className="space-y-4">
-                {group.events.map(({ ev, date }) => {
-                  const isPast = date.getTime() < today.getTime();
-                  const color = colorFor(ev);
-                  return (
-                    <li key={ev.id} className="relative flex flex-col md:flex-row md:items-stretch gap-4 md:gap-0">
-                      {/* Date column */}
-                      <div className="md:w-[7.5rem] md:pr-6 md:text-right shrink-0">
-                        <div className="font-heading font-black text-2xl text-text leading-none">
-                          {format(date, "dd")}
-                        </div>
-                        <div className="text-xs uppercase tracking-wider text-muted mt-1">
-                          {format(date, "EEE", { locale: ptBR })}
-                        </div>
-                        {ev.hora_ini && (
-                          <div className="text-xs text-muted mt-1 flex items-center md:justify-end gap-1">
-                            <Clock className="w-3 h-3" />
-                            {ev.hora_ini}
-                          </div>
-                        )}
-                      </div>
+                {/* Content */}
+                <div className="min-w-0">
+                  <div className="flex items-center flex-wrap gap-2 mb-1.5">
+                    {ev.tipo && (
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md border border-border bg-surface2 text-text/80">
+                        {ev.tipo}
+                      </span>
+                    )}
+                    <span className="text-[10px] font-bold text-muted">
+                      {timeStr} · {location}
+                    </span>
+                  </div>
 
-                      {/* Dot */}
-                      <div className="hidden md:flex absolute left-[7.5rem] -translate-x-1/2 top-2 items-center justify-center">
-                        <span
-                          className="w-3 h-3 rounded-full ring-4"
-                          style={{
-                            background: color,
-                            boxShadow: `0 0 0 4px color-mix(in srgb, ${color} 15%, transparent)`,
-                            ['--tw-ring-color' as never]: "var(--bg)",
-                          }}
-                        />
-                      </div>
+                  <h4 className="text-sm font-bold font-heading text-text group-hover:text-accent transition-colors">
+                    {ev.evento || "Sem título"}
+                  </h4>
+                  {ev.descricao && (
+                    <p className="text-xs text-muted mt-1 line-clamp-1">{ev.descricao}</p>
+                  )}
+                </div>
+              </div>
 
-                      {/* Card */}
-                      <button
-                        type="button"
-                        onClick={() => onSelectEvent?.(ev)}
-                        className="group flex-1 md:ml-10 text-left rounded-2xl border border-border bg-surface hover:bg-surface2 transition-all duration-300 p-5 hover:-translate-y-0.5 hover:shadow-lg"
-                        style={{ borderLeft: `3px solid ${color}` }}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h4 className="font-heading font-bold text-base text-text truncate group-hover:text-accent transition-colors">
-                              {ev.evento || "Sem título"}
-                            </h4>
-                            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
-                              {ev.tipo && (
-                                <span className="px-2 py-0.5 rounded-full bg-surface2 text-text/80 font-medium">
-                                  {ev.tipo}
-                                </span>
-                              )}
-                              {(ev.cidade || ev.uf || ev.localidade) && (
-                                <span className="inline-flex items-center gap-1">
-                                  <MapPin className="w-3 h-3" />
-                                  {[ev.cidade, ev.uf].filter(Boolean).join(" / ") || ev.localidade}
-                                </span>
-                              )}
-                              {ev.responsavel && (
-                                <span className="inline-flex items-center gap-1">
-                                  <Users className="w-3 h-3" />
-                                  {ev.responsavel}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <span
-                            className="shrink-0 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-md"
-                            style={{
-                              color: isPast ? "var(--muted)" : color,
-                              background: isPast
-                                ? "color-mix(in srgb, var(--muted) 10%, transparent)"
-                                : `color-mix(in srgb, ${color} 10%, transparent)`,
-                            }}
-                          >
-                            {isPast ? "Realizado" : ev.status || "Agendado"}
-                          </span>
-                        </div>
-                        {ev.descricao && (
-                          <p className="mt-3 text-sm text-muted line-clamp-2">{ev.descricao}</p>
-                        )}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          ))}
-        </div>
-      </div>
+              <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                {ev.responsavel && (
+                  <span className="text-[10px] font-semibold text-muted hidden sm:inline">
+                    {ev.responsavel}
+                  </span>
+                )}
+                <ArrowUpRight className="h-4 w-4 text-muted group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent transition-all" />
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
