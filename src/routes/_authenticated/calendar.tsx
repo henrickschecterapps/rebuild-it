@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Calendar as CalendarIcon, Plus, Download, LogOut, Moon, Sun, ArrowLeft, GanttChartSquare, LayoutGrid } from "lucide-react";
 import type { View } from "react-big-calendar";
@@ -12,6 +12,8 @@ import CalendarGrid from "@/components/CalendarGrid";
 import TimelineView from "@/components/TimelineView";
 import CardsView from "@/components/CardsView";
 import EventFormModal from "@/components/EventFormModal";
+import CalendarFilters, { defaultFilters, type CalendarFiltersState } from "@/components/CalendarFilters";
+import { filterEvents } from "@/lib/filterEvents";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: CalendarPage,
@@ -24,6 +26,9 @@ function CalendarPage() {
   const { isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [view, setView] = useState<ViewMode>("month");
+  const [filters, setFilters] = useState<CalendarFiltersState>(defaultFilters);
+
+  const filteredEvents = useMemo(() => filterEvents(events, filters), [events, filters]);
 
   useEffect(() => {
     fetchEvents();
@@ -68,7 +73,7 @@ function CalendarPage() {
             <LayoutGrid className="w-4 h-4" /> Cards
           </button>
           <button
-            onClick={() => exportICS(events)}
+            onClick={() => exportICS(filteredEvents)}
             className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-muted hover:text-text hover:bg-surface2 transition-colors text-sm font-semibold"
           >
             <Download className="w-4 h-4" /> Exportar .ics
@@ -98,23 +103,31 @@ function CalendarPage() {
       <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-8 py-8 animate-fade-up">
         {loading && events.length === 0 ? (
           <div className="text-muted text-sm">Carregando eventos...</div>
-        ) : view === "timeline" ? (
-          <TimelineView
-            eventsToRender={events}
-            onSelectEvent={(ev) => useEvents.getState().openEdit(ev)}
-          />
-        ) : view === "cards" ? (
-          <CardsView
-            eventsToRender={events}
-            onSelectEvent={(ev) => useEvents.getState().openEdit(ev)}
-          />
         ) : (
-          <CalendarGrid
-            eventsToRender={events}
-            view={view as View}
-            onView={(v) => setView(v)}
-            onSelectEvent={(ev) => useEvents.getState().openEdit(ev)}
-          />
+          <>
+            <CalendarFilters events={events} filters={filters} onChange={setFilters} />
+            <div className="mb-4 text-xs text-muted font-semibold">
+              {filteredEvents.length} de {events.length} eventos
+            </div>
+            {view === "timeline" ? (
+              <TimelineView
+                eventsToRender={filteredEvents}
+                onSelectEvent={(ev) => useEvents.getState().openEdit(ev)}
+              />
+            ) : view === "cards" ? (
+              <CardsView
+                eventsToRender={filteredEvents}
+                onSelectEvent={(ev) => useEvents.getState().openEdit(ev)}
+              />
+            ) : (
+              <CalendarGrid
+                eventsToRender={filteredEvents}
+                view={view as View}
+                onView={(v) => setView(v)}
+                onSelectEvent={(ev) => useEvents.getState().openEdit(ev)}
+              />
+            )}
+          </>
         )}
       </main>
 
